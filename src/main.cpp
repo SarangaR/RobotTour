@@ -1,6 +1,4 @@
 #include <Arduino.h>
-#include <BluetoothSerial.h>
-#include <AlfredoConnect.h>
 #include <Alfredo_NoU2.h>
 #include <ESP32Encoder.h>
 
