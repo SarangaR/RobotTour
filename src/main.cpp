@@ -3,7 +3,7 @@
 #include <ESP32Encoder.h>
 
 #include "IMU.h"
-#include "mecanumDrivetrain.h"
+#include "Drivetrain.h"
 #include "Arm.h"
 
 /////////////////////////////////// Function Declarations ///////////////////////////////////
@@ -35,7 +35,7 @@ NoU_Motor backLeftMotor(4);
 NoU_Motor backRightMotor(1);
 
 // define drivetrain
-mecanumDrivetrain drivetrain = mecanumDrivetrain(&frontLeftMotor, &frontRightMotor, &backLeftMotor, &backRightMotor);
+Drivetrain drivetrain = Drivetrain(&frontLeftMotor, &frontRightMotor, &backLeftMotor, &backRightMotor);
 
 // define encoders
 ESP32Encoder frontLeftEncoder; // pins 34, 35
