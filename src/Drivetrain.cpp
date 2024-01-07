@@ -17,3 +17,17 @@ void Drivetrain::drive(double power) {
   _backLeftMotor->set(power);
   _backRightMotor->set(power);
 }
+
+void Drivetrain::drive(double left, double right) {
+  _frontLeftMotor->set(left);
+  _frontRightMotor->set(right);
+  _backLeftMotor->set(left);
+  _backRightMotor->set(right);
+}
+
+void Drivetrain::turn(double power) {
+  _frontLeftMotor->set(power);
+  _frontRightMotor->set(-power);
+  _backLeftMotor->set(power);
+  _backRightMotor->set(-power);
+}

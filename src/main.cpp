@@ -4,7 +4,9 @@
 
 #include "IMU.h"
 #include "Drivetrain.h"
-#include "Arm.h"
+
+#include "PID.h"
+
 
 /////////////////////////////////// Function Declarations ///////////////////////////////////
 
@@ -23,6 +25,10 @@ Drivetrain drivetrain = Drivetrain(&frontLeftMotor, &frontRightMotor, &backLeftM
 // define encoders
 ESP32Encoder frontLeftEncoder; // pins 34, 35
 ESP32Encoder frontRightEncoder; // pins 36, 39
+
+PID driveLeftPID;
+PID driveRightPID;
+PID turnPID;
 
 
 // define imu object
@@ -54,13 +60,30 @@ void setup() {
   frontRightEncoder.attachHalfQuad(36, 39);
   frontLeftEncoder.setCount(0);
   frontRightEncoder.setCount(0);
+
+  double driveLeftKp = 0.1;
+  double driveLeftKi = 0;
+  double driveleftKd = 0;
+
+  double driveRightKp = 0.1;
+  double driveRightKi = 0;
+  double driveRightKd = 0;
+
+  double turnKp = 0.1;
+  double turnKi = 0;
+  double turnKd = 0;
+
+  driveLeftPID = PID(0.1, driveLeftKp, driveLeftKi, driveLeftKd);
+  driveRightPID = PID(0.1, driveRightKp, driveRightKi, driveRightKd);
+  turnPID = PID(0.1, turnKp, turnKi, turnKd);
 }
+
 ////////////////////////////////////////////////////////////////////// loop() //////////////////////////////////////////////////////////////////////
 void loop() {
 
 }
 ////////////////////////////////////////////////////////////////////// Function Code //////////////////////////////////////////////////////////////////////
-void driveInches(double inches, double linearX, double linearY, double angularZ) {
+void driveInches(double inches, double power) {
   resetEncoders();
   double revsperin = 1.0/5.93689;
   double requiredrot = revsperin * inches;
@@ -74,19 +97,11 @@ void driveInches(double inches, double linearX, double linearY, double angularZ)
   double leftTarget = leftRot + requiredrot;
   double rightTarget = rightRot + requiredrot;
 
-  serialBT.println("leftRot: " + String(leftRot) + "rightRot: " + String(rightRot));
-  serialBT.println("leftTarget: " + String(leftTarget) + "rightTarget: " + String(rightTarget));
+  double ticksPerSecondLeft = driveLeftPID.calculate(leftTarget, leftRot);
+  double ticksPerSecondRight = driveRightPID.calculate(rightTarget, rightRot);
 
-  while (rightRot < rightTarget || leftRot < leftTarget) {
-    leftRot = fabs(frontLeftEncoder.getCount() / 40.0);
-    rightRot = fabs(frontRightEncoder.getCount() / 40.0);
-    AlfredoConnect.update();
-    if (AlfredoConnect.keyHeld(Key::Space)) {
-      return;
-    } 
-    serialBT.println("leftRot: " + String(leftRot) + "rightRot: " + String(rightRot));
-    serialBT.println("leftTarget: " + String(leftTarget) + "rightTarget: " + String(rightTarget));
-    drivetrain.set(linearX, linearY, angularZ);
-  }
-  drivetrain.set(0, 0, 0);
+  double leftPower = ticksPerSecondLeft / 40.0;
+  double rightPower = ticksPerSecondRight / 40.0;
+
+  drivetrain.drive(0);
 }

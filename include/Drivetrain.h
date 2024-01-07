@@ -11,6 +11,8 @@ class Drivetrain
         void begin();
         
         void drive(double power);
+        void drive(double left, double right);
+        void turn(double power);
 
     private:
         NoU_Motor* _frontLeftMotor;
