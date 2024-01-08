@@ -88,20 +88,18 @@ void driveInches(double inches, double power) {
   double revsperin = 1.0/5.93689;
   double requiredrot = revsperin * inches;
   
-  // 40 ticks per rev
-  double leftRot = fabs(frontLeftEncoder.getCount() / 40.0);
-  double rightRot = fabs(frontRightEncoder.getCount() / 40.0);
-
-  rightRot = fabs(frontRightEncoder.getCount() / 40.0); 
+  // 40 ticks per rev  
+  double leftRot = fabs(frontLeftEncoder.getCount() / 40.0); // rotations
+  double rightRot = fabs(frontRightEncoder.getCount() / 40.0); // rotations
 
   double leftTarget = leftRot + requiredrot;
   double rightTarget = rightRot + requiredrot;
 
-  double ticksPerSecondLeft = driveLeftPID.calculate(leftTarget, leftRot);
-  double ticksPerSecondRight = driveRightPID.calculate(rightTarget, rightRot);
+  double revsPerSecondLeft = driveLeftPID.calculate(leftTarget, leftRot);
+  double revsPerSecondRight = driveRightPID.calculate(rightTarget, rightRot);
 
-  double leftPower = ticksPerSecondLeft / 40.0;
-  double rightPower = ticksPerSecondRight / 40.0;
+  double leftPower = revsPerSecondLeft * 10 / 3;
+  double rightPower = revsPerSecondRight * 10 / 3;
 
-  drivetrain.drive(0);
+  drivetrain.drive(leftPower, rightPower);
 }
