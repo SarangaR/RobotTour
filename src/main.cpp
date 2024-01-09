@@ -26,9 +26,11 @@ Drivetrain drivetrain = Drivetrain(&frontLeftMotor, &frontRightMotor, &backLeftM
 ESP32Encoder frontLeftEncoder; // pins 34, 35
 ESP32Encoder frontRightEncoder; // pins 36, 39
 
-PID driveLeftPID;
-PID driveRightPID;
-PID turnPID;
+PID driveLeftPID = PID(0.1, 0.1, 0, 0);
+PID driveRightPID = PID(0.1, 0.1, 0, 0);
+PID turnPID = PID(0.1, 0.1, 0, 0);
+
+double i = 0;
 
 
 // define imu object
@@ -44,15 +46,14 @@ void resetEncoders() {
 
 ////////////////////////////////////////////////////////////////////// setup() //////////////////////////////////////////////////////////////////////
 void setup() {
-  // start arm
-
+  Serial.begin(115200);
   // start RSL
   pinMode(LED_BUILTIN, OUTPUT);
 
   // set direction of motors
   frontLeftMotor.setInverted(false);
-  frontRightMotor.setInverted(false);
-  backLeftMotor.setInverted(true);
+  frontRightMotor.setInverted(true);
+  backLeftMotor.setInverted(false);
   backRightMotor.setInverted(true);
 
   // init encoders
@@ -63,13 +64,13 @@ void setup() {
 
   double driveLeftKp = 0.1;
   double driveLeftKi = 0;
-  double driveleftKd = 0;
+  double driveLeftKd = 0;
 
   double driveRightKp = 0.1;
   double driveRightKi = 0;
   double driveRightKd = 0;
 
-  double turnKp = 0.1;
+  double turnKp = 1;
   double turnKi = 0;
   double turnKd = 0;
 
@@ -80,26 +81,38 @@ void setup() {
 
 ////////////////////////////////////////////////////////////////////// loop() //////////////////////////////////////////////////////////////////////
 void loop() {
-
+  if (i == 0) {
+    driveInches(12);
+    i++;
+  }
+  // drivetrain.drive(1, 1);
 }
 ////////////////////////////////////////////////////////////////////// Function Code //////////////////////////////////////////////////////////////////////
-void driveInches(double inches, double power) {
-  resetEncoders();
-  double revsperin = 1.0/5.93689;
+void driveInches(double inches) {
+  double revsperin = 1.0/16.33628;
   double requiredrot = revsperin * inches;
   
-  // 40 ticks per rev  
+  // 40 ticks per rev
   double leftRot = fabs(frontLeftEncoder.getCount() / 40.0); // rotations
   double rightRot = fabs(frontRightEncoder.getCount() / 40.0); // rotations
 
   double leftTarget = leftRot + requiredrot;
   double rightTarget = rightRot + requiredrot;
 
-  double revsPerSecondLeft = driveLeftPID.calculate(leftTarget, leftRot);
-  double revsPerSecondRight = driveRightPID.calculate(rightTarget, rightRot);
+  while (!driveLeftPID.isDone(leftTarget, leftRot) && !driveRightPID.isDone(rightTarget, rightRot)) {
+    leftRot = fabs(frontLeftEncoder.getCount() / 40.0); // rotations
+    rightRot = fabs(frontRightEncoder.getCount() / 40.0); // rotations
 
-  double leftPower = revsPerSecondLeft * 10 / 3;
-  double rightPower = revsPerSecondRight * 10 / 3;
+    double revsPerSecondLeft = driveLeftPID.calculate(leftTarget, leftRot);
+    double revsPerSecondRight = driveRightPID.calculate(rightTarget, rightRot);
 
-  drivetrain.drive(leftPower, rightPower);
+    double leftPower = revsPerSecondLeft * 0.3;
+    double rightPower = revsPerSecondRight * 0.3;
+
+    Serial.println("Left Power: " + String(leftPower) + " Right Power: " + String(rightPower));
+
+    drivetrain.drive(leftPower, rightPower);
+  }
+
+  drivetrain.drive(0, 0);
 }

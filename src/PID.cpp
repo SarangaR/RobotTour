@@ -13,6 +13,7 @@ class PIDImpl
         PIDImpl( double dt, double Kp, double Kd, double Ki );
         ~PIDImpl();
         double calculate( double setpoint, double pv );
+        bool isDone(double setpoint, double pv);
 
     private:
         double _dt;
@@ -31,6 +32,10 @@ PID::PID( double dt, double Kp, double Kd, double Ki )
 double PID::calculate( double setpoint, double pv )
 {
     return pimpl->calculate(setpoint,pv);
+}
+bool PID::isDone(double setpoint, double pv)
+{
+    return pimpl->isDone(setpoint, pv);
 }
 PID::~PID() 
 {
@@ -75,6 +80,11 @@ double PIDImpl::calculate( double setpoint, double pv )
     _pre_error = error;
 
     return output;
+}
+bool PIDImpl::isDone(double setpoint, double pv)
+{
+    double error = setpoint - pv;
+    return fabs(error) < 0.1;
 }
 
 PIDImpl::~PIDImpl()

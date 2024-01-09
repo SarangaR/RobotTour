@@ -15,6 +15,7 @@ class PID
 
         // Returns the manipulated variable given a setpoint and current process value
         double calculate( double setpoint, double pv );
+        bool isDone(double setpoint, double pv);
         ~PID();
 
     private:
