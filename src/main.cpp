@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <Alfredo_NoU2.h>
 #include <ESP32Encoder.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BNO055.h>
 
 #include "IMU.h"
 #include "Drivetrain.h"
@@ -109,7 +111,7 @@ void driveInches(double inches) {
     double leftPower = revsPerSecondLeft * 0.3;
     double rightPower = revsPerSecondRight * 0.3;
 
-    Serial.println("Left Power: " + String(leftPower) + " Right Power: " + String(rightPower));
+    // Serial.println("Left Power: " + String(leftPower) + " Right Power: " + String(rightPower));
 
     drivetrain.drive(leftPower, rightPower);
   }
