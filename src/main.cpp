@@ -68,6 +68,8 @@ void setup() {
     while (1);
   }
 
+  delay(1000);
+
   // set direction of motors
   frontLeftMotor.setInverted(false);
   frontRightMotor.setInverted(true);
@@ -88,7 +90,7 @@ void setup() {
   double driveRightKi = 0;
   double driveRightKd = 0;
 
-  double turnKp =0.1;
+  double turnKp = 0.1;
   double turnKi = 0;
   double turnKd = 0;
 
@@ -108,34 +110,39 @@ void setup() {
 
 ////////////////////////////////////////////////////////////////////// loop() //////////////////////////////////////////////////////////////////////
 void loop() {
-    drivetrain.drive(1, 1);
+  if (i == 0) {
+    driveInches(12);
+    i++;
+  }
 }
 ////////////////////////////////////////////////////////////////////// Function Code //////////////////////////////////////////////////////////////////////
-void driveInches(double inches) {
-  double revsperin = 1.0/16.33628;
-  double requiredrot = revsperin * inches;
+void driveInches(double meters) {
+  double wheel_diameter = 0.065; // meters
+  double revsperm = 1 / (wheel_diameter * PI);
+  double requiredrot = meters * revsperm;
+  double ticksperrev = 40;
   
   // 40 ticks per rev
-  double leftRot = frontLeftEncoder.getCount() / 40.0; // rotations
-  double rightRot = frontRightEncoder.getCount() / 40.0; // rotations
+  double leftRot = frontLeftEncoder.getCount() / ticksperrev; // rotations
+  double rightRot = frontRightEncoder.getCount() / ticksperrev; // rotations
 
   double leftTarget = leftRot + requiredrot;
   double rightTarget = rightRot + requiredrot;
 
   while (!driveLeftPID.isDone(leftTarget, leftRot) && !driveRightPID.isDone(rightTarget, rightRot)) {
-    leftRot = frontLeftEncoder.getCount() / 40.0; // rotations
-    rightRot = frontRightEncoder.getCount() / 40.0; // rotations
+    leftRot = frontLeftEncoder.getCount() / ticksperrev; // rotations
+    rightRot = frontRightEncoder.getCount() / ticksperrev; // rotations
 
     double revsPerSecondLeft = driveLeftPID.calculate(leftTarget, leftRot);
     double revsPerSecondRight = driveRightPID.calculate(rightTarget, rightRot);
 
-    double leftPower = revsPerSecondLeft * 0.3;
-    double rightPower = revsPerSecondRight * 0.3;
+    double leftPower = revsPerSecondLeft / 120.0;
+    double rightPower = revsPerSecondRight / 120.0;
 
-    // Serial.println("Left Power: " + String(leftPower) + " Right Power: " + String(rightPower));
+    Serial.println("Left Power: " + String(revsPerSecondLeft) + " Right Power: " + String(revsPerSecondRight) + " Left Rot: " + String(leftRot) + " Right Rot: " + String(rightRot) + " Left Target: " + String(leftTarget) + " Right Target: " + String(rightTarget));
+
 
     drivetrain.drive(leftPower, rightPower);
-    Serial.println("Left Power: " + String(leftPower) + " Right Power: " + String(rightPower));
   }
 
   drivetrain.drive(0, 0);
@@ -155,10 +162,12 @@ void turnDegrees(double degrees) {
 
         double roundedPower = round(power * 100) / 100;
 
-        Serial.println("Yaw: " + String(yaw) + " Power: " + String(roundedPower));
+        Serial.println("Yaw: " + String(yaw) + "Target Yaw" + String(targetYaw) + " Power: " + String(roundedPower));
 
         drivetrain.turn(power);
     }
+
+    Serial.println("Done");
 
     drivetrain.drive(0, 0);
 }
