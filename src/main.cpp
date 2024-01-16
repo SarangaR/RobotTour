@@ -10,6 +10,8 @@
 #include "PID.h"
 #include "PID_RT.h"
 
+#include <string.h>
+
 
 /////////////////////////////////// Function Declarations ///////////////////////////////////
 
@@ -111,7 +113,7 @@ void setup() {
 ////////////////////////////////////////////////////////////////////// loop() //////////////////////////////////////////////////////////////////////
 void loop() {
   if (i == 0) {
-    driveInches(12);
+    driveInches(0.5);
     i++;
   }
 }
@@ -129,18 +131,17 @@ void driveInches(double meters) {
   double leftTarget = leftRot + requiredrot;
   double rightTarget = rightRot + requiredrot;
 
-  while (!driveLeftPID.isDone(leftTarget, leftRot) && !driveRightPID.isDone(rightTarget, rightRot)) {
+  while (!driveLeftPID.isDone(leftTarget, leftRot) || !driveRightPID.isDone(rightTarget, rightRot)) {
     leftRot = frontLeftEncoder.getCount() / ticksperrev; // rotations
     rightRot = frontRightEncoder.getCount() / ticksperrev; // rotations
 
     double revsPerSecondLeft = driveLeftPID.calculate(leftTarget, leftRot);
     double revsPerSecondRight = driveRightPID.calculate(rightTarget, rightRot);
 
-    double leftPower = revsPerSecondLeft / 120.0;
-    double rightPower = revsPerSecondRight / 120.0;
+    double leftPower = revsPerSecondLeft / (requiredrot*0.1);
+    double rightPower = revsPerSecondRight / (requiredrot*0.1);
 
-    Serial.println("Left Power: " + String(revsPerSecondLeft) + " Right Power: " + String(revsPerSecondRight) + " Left Rot: " + String(leftRot) + " Right Rot: " + String(rightRot) + " Left Target: " + String(leftTarget) + " Right Target: " + String(rightTarget));
-
+    Serial.println("Left Power: " + std::to_string(revsPerSecondLeft) + " Right Power: " + std::to_string(revsPerSecondRight) + " Left Rot: " + std::to_string(leftRot) + " Right Rot: " + std::to_string(rightRot) + " Left Target: " + std::to_string(leftTarget) + " Right Target: " + std::to_string(rightTarget));
 
     drivetrain.drive(leftPower, rightPower);
   }
